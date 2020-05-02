@@ -16,4 +16,28 @@ public class Product {
         this.shipping=shipping;
         this.viewItemURL=url;
     }
+
+    public String getImage() {
+        return image;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public String getPrice() {
+        return price;
+    }
+
+    public String getCondition() {
+        return condition;
+    }
+
+    public String getShipping() {
+        return shipping;
+    }
+
+    public String getViewItemURL() {
+        return viewItemURL;
+    }
 }

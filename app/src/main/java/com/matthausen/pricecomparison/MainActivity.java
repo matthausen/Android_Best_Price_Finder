@@ -4,9 +4,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Adapter;
 import android.widget.SearchView;
 import android.widget.Toast;
 import com.androdocs.httprequest.HttpRequest;
@@ -18,28 +20,30 @@ import org.json.JSONObject;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 
-// - myDataset must be an array of Product
-// - Start new activity on recycler view item click
-// - Create searchview layout
-// - Create recyclerview layout
+
+// - Set image for product from URL
+// - Improve recyclerview layout
 // - Create detail view layout
+// - Create search view layout
+// - Drop down menu with options for country
+
 // - Add Amazon API
 // - Add search filters
 // - Store in environment variables sensitive data
+// - Add AliBaba / ALiexpress API
 
 
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "Main Activity";
+    private Context context;
+    private IProcess mprocess;
 
     String COUNTRY = "EBAY-GB";
     String APP_NAME = "MatteoFu-dashboar-PRD-61979435f-f81d2e44";
     String FORMAT = "&RESPONSE-DATA-FORMAT=JSON&keywords=";
     String GLOBAL_ID = "&X-EBAY-SOA-GLOBAL-ID=";
     String EBAY_API = "https://svcs.ebay.com/services/search/FindingService/v1?OPERATION-NAME=findItemsByKeywords&SERVICE-VERSION=1.0.0&SECURITY-APPNAME=";
-
-
-    String[] myDataset = {"item1", "item2", "item3"};
 
     private RecyclerView recyclerView;
     private RecyclerView.Adapter mAdapter;
@@ -51,8 +55,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         SearchView searchView = findViewById(R.id.item_search);
-        final CharSequence query = searchView.getQuery();
-
+        // final CharSequence query = searchView.getQuery();
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -70,8 +73,18 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setHasFixedSize(true);
         layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
+        context = this;
 
-        mAdapter = new ItemAdapter(myDataset);
+        ArrayList<Product> myDataset = new ArrayList<>();
+        mprocess = new IProcess() {
+            @Override
+            public void updateAdapter(ArrayList<Product> result) {
+                recyclerView.setAdapter(new ItemAdapter(context, result));
+                mAdapter.notifyDataSetChanged();
+            }
+        };
+
+        mAdapter = new ItemAdapter(this, myDataset);
         recyclerView.setAdapter(mAdapter);
     }
 
@@ -111,7 +124,6 @@ public class MainActivity extends AppCompatActivity {
                         .getJSONObject(0).getJSONArray("searchResult")
                         .getJSONObject(0).getJSONArray("item");
 
-                // Product[] items = new Product[product.length()];
 
                 ArrayList<Product> items = new ArrayList<Product>();
 
@@ -126,7 +138,12 @@ public class MainActivity extends AppCompatActivity {
                     String itemURL = object.getJSONArray("viewItemURL").getString(0);
 
                     items.add(new Product(image, title, price, condition, shipping, itemURL));
-                    System.out.println(items);
+                }
+
+                if (items.size() > 0 ) {
+                    mprocess.updateAdapter(items);
+                } else {
+                    Log.d(TAG, "No product found");
                 }
 
             } catch(JSONException e) {
