@@ -1,7 +1,12 @@
 package com.matthausen.pricecomparison;
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -15,36 +20,57 @@ public class ProductDetailActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.product_detail_view);
-        Log.d(TAG, "onCreate: started.");
 
         getDetails();
 
     }
 
     private void getDetails() {
-        Log.d(TAG,"Get incoming content");
 
-        if(getIntent().hasExtra("image_url") && getIntent().hasExtra("image_name")){
-            Log.d(TAG, "getIncomingIntent: found intent extras.");
-
-            String imageUrl = getIntent().getStringExtra("image_url");
-            String imageName = getIntent().getStringExtra("image_name");
-
-            setImage(imageUrl, imageName);
+        if(getIntent().hasExtra("imageUrl")){
+            String imageUrl = getIntent().getStringExtra("imageUrl");
+            ImageView image = findViewById(R.id.detail_image);
+            Glide.with(this)
+                    .asBitmap()
+                    .load(imageUrl)
+                    .into(image);
         }
-    }
 
-    private void setImage(String imageUrl, String imageName){
-        Log.d(TAG, "setImage: setting te image and name to widgets.");
+        if(getIntent().hasExtra("title")) {
+            String title = getIntent().getStringExtra("title");
+            TextView detail_title = findViewById(R.id.detail_title);
+            detail_title.setText(title);
+        }
+        if(getIntent().hasExtra("price") && getIntent().hasExtra("currency")) {
+            String price = getIntent().getStringExtra("price");
+            String currency = getIntent().getStringExtra("currency");
+            TextView detail_price = findViewById(R.id.detail_price);
+            detail_price.setText("Price: " + currency + " " + price);
+        }
+        if(getIntent().hasExtra("shipping") && getIntent().hasExtra("currency")) {
+            String shipping = getIntent().getStringExtra("shipping");
+            String currency = getIntent().getStringExtra("currency");
+            TextView detail_shipping = findViewById(R.id.detail_shipping);
+            detail_shipping.setText("Shipping: " + currency + " " + shipping);
+        }
+        if(getIntent().hasExtra("condition")) {
+            String condition = getIntent().getStringExtra("condition");
+            TextView detail_condition = findViewById(R.id.detail_condition);
+            detail_condition.setText(condition);
+        }
+        if(getIntent().hasExtra("originalUrl")) {
+            final String originalUrl = getIntent().getStringExtra("originalUrl");
+            Button buyBtn = findViewById(R.id.buy);
+            buyBtn.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View arg0) {
+                    Intent viewIntent =
+                            new Intent("android.intent.action.VIEW",
+                                    Uri.parse(originalUrl));
+                    startActivity(viewIntent);
+                }
+            });
 
-        TextView name = findViewById(R.id.product_text);
-        name.setText(imageName);
-
-        ImageView image = findViewById(R.id.image);
-        Glide.with(this)
-                .asBitmap()
-                .load(imageUrl)
-                .into(image);
+        }
     }
 }
 

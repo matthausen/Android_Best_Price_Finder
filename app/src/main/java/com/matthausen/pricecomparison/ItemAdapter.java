@@ -2,28 +2,32 @@ package com.matthausen.pricecomparison;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 
 public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder> {
     private static final String TAG = "RecyclerViewAdapter";
     private Context mContext;
-    private ArrayList<Product>  mDataset;
+    private ArrayList<Product> mDataset;
 
     public static class ItemViewHolder extends RecyclerView.ViewHolder {
         public ImageView mImageView;
         public TextView mtextView1;
         public TextView mtextView2;
-        public RelativeLayout parentLayout;
+        public ConstraintLayout parentLayout;
 
         public ItemViewHolder(View v) {
             super(v);
@@ -50,12 +54,12 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
     }
 
     @Override
-    public void onBindViewHolder(ItemViewHolder holder, int position) {
-        Product currentProduct = mDataset.get(position);
+    public void onBindViewHolder(ItemViewHolder holder, final int position) {
+        final Product currentProduct = mDataset.get(position);
 
-        // holder.mImageView.setText(mDataset[position]);
+        new DownloadImageTask(holder.mImageView).execute(currentProduct.getImage());
         holder.mtextView1.setText(currentProduct.getTitle());
-        holder.mtextView2.setText(currentProduct.getPrice());
+        holder.mtextView2.setText(currentProduct.getCurrency() + " " + currentProduct.getPrice());
 
         holder.parentLayout.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -63,8 +67,13 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
                 Log.d(TAG, "onClick: open new activity ");
 
                 Intent intent = new Intent(mContext, ProductDetailActivity.class);
-                // intent.putExtra("image_url", mImages.get(position));
-                // intent.putExtra("image_name", mImageNames.get(position));
+                intent.putExtra("imageUrl",  currentProduct.getImage());
+                intent.putExtra("title", currentProduct.getTitle());
+                intent.putExtra("currency", currentProduct.getCurrency());
+                intent.putExtra("price", currentProduct.getPrice());
+                intent.putExtra("shipping", currentProduct.getShipping());
+                intent.putExtra("condition", currentProduct.getCondition());
+                intent.putExtra("originalUrl", currentProduct.getViewItemURL());
                 mContext.startActivity(intent);
             }
         });
@@ -74,5 +83,30 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
     @Override
     public int getItemCount() {
         return mDataset.size();
+    }
+
+    private class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
+        ImageView bmImage;
+
+        public DownloadImageTask(ImageView bmImage) {
+            this.bmImage = bmImage;
+        }
+
+        protected Bitmap doInBackground(String... urls) {
+            String urldisplay = urls[0];
+            Bitmap mIcon11 = null;
+            try {
+                InputStream in = new java.net.URL(urldisplay).openStream();
+                mIcon11 = BitmapFactory.decodeStream(in);
+            } catch (Exception e) {
+                Log.e("Error", e.getMessage());
+                e.printStackTrace();
+            }
+            return mIcon11;
+        }
+
+        protected void onPostExecute(Bitmap result) {
+            bmImage.setImageBitmap(result);
+        }
     }
 }
