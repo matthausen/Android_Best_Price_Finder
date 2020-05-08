@@ -18,28 +18,8 @@ import org.json.JSONObject;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
-
-
-// - Create detail view layout:
-    /*
-    * Avg price for new
-    * Avg price for used
-    * Avg price on Ebay and Amazon
-    * Min - Max price on Ebay
-    * Min -Max price on Amazon
-    *
-    * */
-// - Drop down menu with options for country
-// - String replace space in search with '&' character
-// - Filter for price
-// - Filter for condition
-// - Initial loading page
-// - Remove current AppBar and create a better one with a logo
-
-// - Add Amazon API
-// - Add search filters
-// - Store in environment variables sensitive data
-// - Add AliBaba / Aliexpress API
+import java.util.Collections;
+import java.util.Comparator;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -68,6 +48,7 @@ public class MainActivity extends AppCompatActivity {
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
+                query.replace(' ', '&');
                 fetchItems(query);
                 return false;
             }
@@ -89,6 +70,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void updateAdapter(ArrayList<Product> result) {
                 recyclerView.setAdapter(new ItemAdapter(context, result));
+                // Sort the price for lowest to highest in the Adapter
+                Collections.sort(result, new Comparator<Product>() {
+                    @Override
+                    public int compare(Product lowest, Product highest) {
+                        return Float.compare(Float.parseFloat(lowest.getPrice()), Float.parseFloat(highest.getPrice()));
+                    }
+                });
                 mAdapter.notifyDataSetChanged();
             }
         };

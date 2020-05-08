@@ -4,7 +4,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -56,7 +55,7 @@ public class ProductDetailActivity extends AppCompatActivity {
         if(getIntent().hasExtra("condition")) {
             String condition = getIntent().getStringExtra("condition");
             TextView detail_condition = findViewById(R.id.detail_condition);
-            detail_condition.setText(condition);
+            detail_condition.setText("Condition: "+ condition);
         }
         if(getIntent().hasExtra("originalUrl")) {
             final String originalUrl = getIntent().getStringExtra("originalUrl");
